@@ -83,7 +83,7 @@ func (f *fileStore) AllFiles() ([]string, error) {
 	defer func(dir string) {
 		err := os.Chdir(dir)
 		if err != nil {
-			fmt.Printf("failed to change dir back to %s", pwd)
+			fmt.Printf("failed to change dir back to %s", dir)
 		}
 	}(pwd)
 
