@@ -8,5 +8,5 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/marmotedu/errors v1.0.2
 	github.com/novalagung/gubrak v1.0.0
-	github.com/stretchr/testify v1.4.0 // indirect
+	github.com/stretchr/testify v1.4.0
 )
