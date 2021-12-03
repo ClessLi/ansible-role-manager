@@ -9,4 +9,5 @@ require (
 	github.com/marmotedu/errors v1.0.2
 	github.com/novalagung/gubrak v1.0.0
 	github.com/stretchr/testify v1.4.0
+	golang.org/x/tools v0.1.1
 )
