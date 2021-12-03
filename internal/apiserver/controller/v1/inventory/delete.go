@@ -7,7 +7,7 @@ import (
 )
 
 func (i *InventoryController) Delete(c *gin.Context) {
-	if err := i.srv.Inventory().Delete(c, c.Param("name"), metav1.DeleteOptions{}); err != nil {
+	if err := i.srv.Inventory().Delete(c, c.Param("group"), metav1.DeleteOptions{}); err != nil {
 		core.WriteResponse(c, err, nil)
 
 		return

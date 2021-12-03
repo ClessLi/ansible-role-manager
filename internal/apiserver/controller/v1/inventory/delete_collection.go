@@ -7,7 +7,7 @@ import (
 )
 
 func (i *InventoryController) DeleteCollection(c *gin.Context) {
-	groupNames := c.QueryArray("name")
+	groupNames := c.QueryArray("groups")
 
 	if err := i.srv.Inventory().DeleteCollection(c, groupNames, metav1.DeleteOptions{}); err != nil {
 		core.WriteResponse(c, err, nil)

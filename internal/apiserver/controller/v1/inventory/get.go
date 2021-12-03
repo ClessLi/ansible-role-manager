@@ -7,7 +7,7 @@ import (
 )
 
 func (i *InventoryController) Get(c *gin.Context) {
-	if groupBO, err := i.srv.Inventory().Get(c, c.Param("name"), metav1.GetOptions{}); err != nil {
+	if groupBO, err := i.srv.Inventory().Get(c, c.Param("group"), metav1.GetOptions{}); err != nil {
 		core.WriteResponse(c, err, nil)
 
 		return

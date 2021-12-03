@@ -17,14 +17,21 @@ func (i *InventoryController) Update(c *gin.Context) {
 		return
 	}
 
-	groupBO, err := decoderIns.DecodeGroup(&r)
+	groupBO, err := i.srv.Inventory().Get(c, c.Param("group"), metav1.GetOptions{})
+	if err != nil {
+		core.WriteResponse(c, err, nil)
+		return
+	}
+	r.GroupName = groupBO.GetName()
+
+	requestGroupBO, err := decoderIns.DecodeGroup(&r)
 	if err != nil {
 		core.WriteResponse(c, errors.WithCode(code.ErrDecodingFailed, err.Error()), nil)
 
 		return
 	}
 
-	if err = i.srv.Inventory().Update(c, groupBO, metav1.UpdateOptions{}); err != nil {
+	if err = i.srv.Inventory().Update(c, requestGroupBO, metav1.UpdateOptions{}); err != nil {
 		core.WriteResponse(c, err, nil)
 
 		return
