@@ -67,6 +67,26 @@ info:
   version: 0.1.0
 paths:
   /inventory/groups:
+    delete:
+      description: Delete groups
+      operationId: deleteGroupCollectionRequest
+      parameters:
+      - in: query
+        items:
+          type: string
+        name: groups
+        type: array
+        x-go-name: Groups
+      responses:
+        "200":
+          $ref: '#/responses/okResponse'
+        default:
+          $ref: '#/responses/errResponse'
+      security:
+      - api_key: []
+      summary: Batch delete group.
+      tags:
+      - groups
     get:
       description: List groups.
       operationId: listGroupRequest

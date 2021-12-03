@@ -29,6 +29,19 @@ import (
 //       default: errResponse
 //       200: okResponse
 
+// swagger:route DELETE /inventory/groups groups deleteGroupCollectionRequest
+//
+// Batch delete group.
+//
+// Delete groups
+//
+//     Security:
+//       api_key:
+//
+//     Responses:
+//       default: errResponse
+//       200: okResponse
+
 // swagger:route PUT /inventory/groups/{group} groups updateGroupRequest
 //
 // Update group.
@@ -109,6 +122,13 @@ type groupNameParamsWrapper struct {
 	// Group name.
 	// in:path
 	Group string `json:"group"`
+}
+
+// Batch delete groups.
+// swagger:parameters deleteGroupCollectionRequest
+type deleteCollectionRequestParamsWrapper struct {
+	// in:query
+	Groups []string `json:"groups"`
 }
 
 // ErrResponse defines the return message when an error occurred.
