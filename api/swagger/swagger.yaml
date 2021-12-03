@@ -23,7 +23,7 @@ definitions:
         x-go-name: Reference
     title: ErrResponse defines the return messages when an error occurred.
     type: object
-    x-go-package: github.com/ClessLi/ansible-role-manager/internal/apiserver/controller/v1
+    x-go-package: github.com/ClessLi/ansible-role-manager/internal/pkg/core
   Group:
     properties:
       group_name:

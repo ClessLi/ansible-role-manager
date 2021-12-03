@@ -2,7 +2,7 @@ package docs
 
 import (
 	v1 "github.com/ClessLi/ansible-role-manager/api/apiserver/v1"
-	ctrl_v1 "github.com/ClessLi/ansible-role-manager/internal/apiserver/controller/v1"
+	"github.com/ClessLi/ansible-role-manager/internal/pkg/core"
 	metav1 "github.com/ClessLi/ansible-role-manager/internal/pkg/meta/v1"
 )
 
@@ -115,7 +115,7 @@ type groupNameParamsWrapper struct {
 // swagger:response errResponse
 type errResponseWrapper struct {
 	// in:body
-	Body ctrl_v1.ErrResponse
+	Body core.ErrResponse
 }
 
 // Return nil json object.
