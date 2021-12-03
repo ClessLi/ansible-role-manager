@@ -1,10 +1,11 @@
 package inventory
 
 import (
-	"fmt"
 	"github.com/AlekSi/pointer"
 	v1 "github.com/ClessLi/ansible-role-manager/api/apiserver/v1"
 	ansible_inventory "github.com/ClessLi/ansible-role-manager/internal/pkg/ansible-inventory"
+	"github.com/ClessLi/ansible-role-manager/internal/pkg/code"
+	"github.com/marmotedu/errors"
 )
 
 var decoderIns = NewDecoder()
@@ -34,10 +35,14 @@ func (d *decoder) DecodeGroup(groupVO *v1.Group) (ansible_inventory.Group, error
 	}
 
 	if len(invalidHosts) > 0 {
-		return nil, fmt.Errorf("invalid hosts: %+v", invalidHosts)
+		return nil, errors.WithCode(code.ErrDecodingFailed, "invalid hosts: %v", invalidHosts)
 	}
 
-	return ansible_inventory.NewGroup(groupVO.GroupName, hostsBO)
+	groupBO, err := ansible_inventory.NewGroup(groupVO.GroupName, hostsBO)
+	if err != nil {
+		return nil, errors.WithCode(code.ErrDecodingFailed, err.Error())
+	}
+	return groupBO, nil
 }
 
 func (d *decoder) DecodeGroups(groupsVO *v1.Groups) (*ansible_inventory.Groups, error) {

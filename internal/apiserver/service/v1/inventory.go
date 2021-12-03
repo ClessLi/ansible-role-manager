@@ -5,6 +5,7 @@ import (
 	"github.com/ClessLi/ansible-role-manager/internal/apiserver/store"
 	ansible_inventory "github.com/ClessLi/ansible-role-manager/internal/pkg/ansible-inventory"
 	metav1 "github.com/ClessLi/ansible-role-manager/internal/pkg/meta/v1"
+	"github.com/marmotedu/errors"
 )
 
 //type InventorySrv interface {
@@ -35,25 +36,27 @@ func newInventory(srv *service) *inventoryService {
 }
 
 func (i *inventoryService) Create(ctx context.Context, group ansible_inventory.Group, options metav1.CreateOptions) error {
-	return i.store.Inventory().Create(ctx, group, options)
+	return errors.Wrapf(i.store.Inventory().Create(ctx, group, options), "creat group '%v' error", group.GetName())
 }
 
 func (i *inventoryService) Delete(ctx context.Context, groupName string, options metav1.DeleteOptions) error {
-	return i.store.Inventory().Delete(ctx, groupName, options)
+	return errors.Wrapf(i.store.Inventory().Delete(ctx, groupName, options), "delete group '%v' error", groupName)
 }
 
 func (i *inventoryService) DeleteCollection(ctx context.Context, groupNames []string, options metav1.DeleteOptions) error {
-	return i.store.Inventory().DeleteCollection(ctx, groupNames, options)
+	return errors.Wrapf(i.store.Inventory().DeleteCollection(ctx, groupNames, options), "delete groups '%v' error", groupNames)
 }
 
 func (i *inventoryService) Update(ctx context.Context, group ansible_inventory.Group, options metav1.UpdateOptions) error {
-	return i.store.Inventory().Update(ctx, group, options)
+	return errors.Wrapf(i.store.Inventory().Update(ctx, group, options), "update group '%v' error", group.GetName())
 }
 
 func (i *inventoryService) Get(ctx context.Context, groupName string, options metav1.GetOptions) (ansible_inventory.Group, error) {
-	return i.store.Inventory().Get(ctx, groupName, options)
+	group, err := i.store.Inventory().Get(ctx, groupName, options)
+	return group, errors.Wrapf(err, "get group '%v' error", groupName)
 }
 
 func (i *inventoryService) List(ctx context.Context, options metav1.ListOptions) (*ansible_inventory.Groups, error) {
-	return i.store.Inventory().List(ctx, options)
+	groups, err := i.store.Inventory().List(ctx, options)
+	return groups, errors.Wrapf(err, "list groups error")
 }

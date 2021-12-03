@@ -1,8 +1,8 @@
 package file_store
 
 import (
-	"errors"
 	"fmt"
+	"github.com/marmotedu/errors"
 	"os"
 	"path/filepath"
 	"sync"
@@ -25,50 +25,51 @@ type fileStore struct {
 func (f *fileStore) Write(filePath string, data []byte) error {
 	absFilePath, err := f.checkFilePath(filePath)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "failed to write file '%s'", filePath)
 	}
 
 	err = checkDir(f.workspace)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "failed to write file '%s'", filePath)
 	}
 
-	return os.WriteFile(absFilePath, data, 0644)
+	return errors.Wrapf(os.WriteFile(absFilePath, data, 0644), "write file '%s' error", filePath)
 }
 
 func (f *fileStore) Read(filePath string) (data []byte, err error) {
 	absFilePath, err := f.checkFilePath(filePath)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to read file '%s'", filePath)
 	}
 
 	err = checkDir(f.workspace)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to read file '%s'", filePath)
 	}
 
-	return os.ReadFile(absFilePath)
+	data, err = os.ReadFile(absFilePath)
+	return data, errors.Wrapf(err, "read file '%s' error", filePath)
 }
 
 func (f *fileStore) Remove(filePath string) error {
 	absFilePath, err := f.checkFilePath(filePath)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "failed to remove file '%s'", filePath)
 	}
 
 	err = checkDir(f.workspace)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "failed to remove file '%s'", filePath)
 	}
 
-	return os.Remove(absFilePath)
+	return errors.Wrapf(os.Remove(absFilePath), "remove file '%s' error", filePath)
 }
 
 func (f *fileStore) AllFiles() ([]string, error) {
 
 	err := checkDir(f.workspace)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "get all files error")
 	}
 
 	// change directory to workspace
@@ -78,7 +79,7 @@ func (f *fileStore) AllFiles() ([]string, error) {
 	}
 	err = os.Chdir(f.workspace)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(err.Error())
 	}
 	defer func(dir string) {
 		err := os.Chdir(dir)
@@ -89,9 +90,10 @@ func (f *fileStore) AllFiles() ([]string, error) {
 
 	filePaths, err := filepath.Glob("*")
 	if err != nil {
-		return nil, err
+		return nil, errors.New(err.Error())
 	}
 
+	errs := make([]error, 0)
 	for j := 0; j < len(filePaths); j++ {
 		fStat, err := os.Stat(filePaths[j])
 		if err == nil && !fStat.IsDir() {
@@ -99,20 +101,23 @@ func (f *fileStore) AllFiles() ([]string, error) {
 
 		}
 		if err != nil {
+			errs = append(errs, errors.New(err.Error()))
 			fmt.Printf("check %s error, %s\n", filePaths[j], err)
 		}
 		filePaths = append(filePaths[:j], filePaths[j+1:]...) // remove this file path record
 	}
 
 	if len(filePaths) == 0 {
-		err = errors.New("no file in this file-store")
+		//err = errors.New("no file in this file-store")
+		err = errors.New("no file in this FileStore")
+		errs = append(errs, err)
 	}
 
-	return filePaths, err
+	return filePaths, errors.NewAggregate(errs)
 }
 
 func (f *fileStore) Workspace() (string, error) {
-	return f.workspace, checkDir(f.workspace)
+	return f.workspace, errors.Wrap(checkDir(f.workspace), "workspace error")
 }
 
 func (f *fileStore) checkFilePath(filePath string) (absFilePath string, err error) {
@@ -121,11 +126,11 @@ func (f *fileStore) checkFilePath(filePath string) (absFilePath string, err erro
 	}
 	relativeFilePath, err := filepath.Rel(f.workspace, filePath)
 	if err != nil {
-		return "", err
+		return "", errors.New(err.Error())
 	}
 
 	if relativeFilePath[0] == '.' && relativeFilePath[1] == '.' {
-		return "", fmt.Errorf("invalid file path: %v", filePath)
+		return "", errors.Errorf("invalid file path: %v", filePath)
 	}
 
 	return filepath.Abs(filepath.Join(f.workspace, relativeFilePath))
@@ -134,12 +139,12 @@ func (f *fileStore) checkFilePath(filePath string) (absFilePath string, err erro
 func NewFileStore(dirPath string) (FileStore, error) {
 	err := checkDir(dirPath)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "build FileStore error")
 	}
 
 	absDirPath, err := filepath.Abs(dirPath)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "build FileStore error")
 	}
 
 	fs := &fileStore{workspace: absDirPath}
@@ -151,10 +156,10 @@ func checkDir(dirPath string) error {
 	defer fileLock.Unlock()
 	dirStat, err := os.Stat(dirPath)
 	if err != nil {
-		return err
+		return errors.New(err.Error())
 	}
 	if !dirStat.IsDir() {
-		return fmt.Errorf("%s is not a directory", dirPath)
+		return errors.Errorf("%s is not a directory", dirPath)
 	}
 
 	return nil
