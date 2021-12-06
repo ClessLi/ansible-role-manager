@@ -1,0 +1,261 @@
+basePath: /
+consumes:
+- application/json
+definitions:
+  ErrResponse:
+    description: Reference will be omitted if it does not exist.
+    properties:
+      code:
+        description: Code defines the business error code.
+        format: int64
+        type: integer
+        x-go-name: Code
+      message:
+        description: |-
+          Message contains the detail of this message.
+          This message is suitable to be exposed to external
+        type: string
+        x-go-name: Message
+      reference:
+        description: Reference returns the reference document which maybe useful to
+          solve this error.
+        type: string
+        x-go-name: Reference
+    title: ErrResponse defines the return messages when an error occurred.
+    type: object
+    x-go-package: github.com/ClessLi/ansible-role-manager/internal/pkg/core
+  Group:
+    properties:
+      group_name:
+        type: string
+        x-go-name: GroupName
+      hosts:
+        items:
+          $ref: '#/definitions/Host'
+        type: array
+        x-go-name: Hosts
+    type: object
+    x-go-package: github.com/ClessLi/ansible-role-manager/api/apiserver/v1
+  Groups:
+    properties:
+      items:
+        additionalProperties:
+          $ref: '#/definitions/Group'
+        type: object
+        x-go-name: Items
+      totalGroupsNum:
+        format: uint64
+        type: integer
+        x-go-name: TotalGroupsNum
+      totalPagesNum:
+        format: uint64
+        type: integer
+        x-go-name: TotalPagesNum
+    type: object
+    x-go-package: github.com/ClessLi/ansible-role-manager/api/apiserver/v1
+  Host:
+    properties:
+      ipaddr:
+        type: string
+        x-go-name: Ipaddr
+    type: object
+    x-go-package: github.com/ClessLi/ansible-role-manager/api/apiserver/v1
+host: localhost
+info:
+  description: Documentation of our ansible-role-manager API.
+  title: ansible-role-manager.
+  version: 0.1.0
+paths:
+  /inventory/groups:
+    delete:
+      description: Delete groups
+      operationId: deleteGroupCollectionRequest
+      parameters:
+      - in: query
+        items:
+          type: string
+        name: groups
+        type: array
+        x-go-name: Groups
+      responses:
+        "200":
+          $ref: '#/responses/okResponse'
+        default:
+          $ref: '#/responses/errResponse'
+      security:
+      - api_key: []
+      summary: Batch delete group.
+      tags:
+      - groups
+    get:
+      description: List groups.
+      operationId: listGroupRequest
+      parameters:
+      - description: |-
+          Kind is a string value representing the REST resource this object represents.
+          Servers may infer this from the endpoint the client submits requests to.
+          Cannot be updated.
+          In CamelCase.
+        in: query
+        name: kind
+        type: string
+        x-go-name: Kind
+      - description: |-
+          APIVersion defines the versioned schema of this representation of an object.
+          Servers should convert recognized schemas to the latest internal value, and
+          may reject unrecognized values.
+        in: query
+        name: apiVersion
+        type: string
+        x-go-name: APIVersion
+      - description: LabelSelector is used to find matching REST resources.
+        in: query
+        name: labelSelector
+        type: string
+        x-go-name: LabelSelector
+      - description: FieldSelector restricts the list of returned objects by their
+          fields. Defaults to everything.
+        in: query
+        name: fieldSelector
+        type: string
+        x-go-name: FieldSelector
+      - description: TimeoutSeconds specifies the seconds of ClientIP type session
+          sticky time.
+        format: int64
+        in: query
+        name: timeoutSeconds
+        type: integer
+        x-go-name: TimeoutSeconds
+      - description: Page specify the number of the displayed page.
+        format: uint64
+        in: query
+        name: page
+        type: integer
+        x-go-name: Page
+      - description: NumPerPage specify the number of records per page.
+        format: uint64
+        in: query
+        name: num_per_page
+        type: integer
+        x-go-name: NumPerPage
+      responses:
+        "200":
+          $ref: '#/responses/listGroupResponse'
+        default:
+          $ref: '#/responses/errResponse'
+      summary: List groups.
+      tags:
+      - groups
+    post:
+      description: Create groups according to input parameters.
+      operationId: createGroupRequest
+      parameters:
+      - description: Group information.
+        in: body
+        name: Body
+        schema:
+          $ref: '#/definitions/Group'
+      responses:
+        "200":
+          $ref: '#/responses/createGroupResponse'
+        default:
+          $ref: '#/responses/errResponse'
+      security:
+      - api_key: []
+      summary: Create groups.
+      tags:
+      - groups
+  /inventory/groups/{group}:
+    delete:
+      description: Delete group according to input parameters.
+      operationId: deleteGroupRequest
+      parameters:
+      - description: Group name.
+        in: path
+        name: group
+        required: true
+        type: string
+        x-go-name: Group
+      responses:
+        "200":
+          $ref: '#/responses/okResponse'
+        default:
+          $ref: '#/responses/errResponse'
+      summary: Delete group.
+      tags:
+      - groups
+    get:
+      description: Get details for specified group according to input parameters.
+      operationId: getGroupRequest
+      parameters:
+      - description: Group name.
+        in: path
+        name: group
+        required: true
+        type: string
+        x-go-name: Group
+      responses:
+        "200":
+          $ref: '#/responses/getGroupResponse'
+        default:
+          $ref: '#/responses/errResponse'
+      summary: Get details for specified group.
+      tags:
+      - groups
+    put:
+      description: Update group according to input parameters.
+      operationId: updateGroupRequest
+      parameters:
+      - description: Group information.
+        in: body
+        name: Body
+        schema:
+          $ref: '#/definitions/Group'
+      - description: Group name.
+        in: path
+        name: group
+        required: true
+        type: string
+        x-go-name: Group
+      responses:
+        "200":
+          $ref: '#/responses/updateGroupResponse'
+        default:
+          $ref: '#/responses/errResponse'
+      security:
+      - api_key: []
+      summary: Update group.
+      tags:
+      - groups
+produces:
+- application/json
+responses:
+  createGroupResponse:
+    description: Group response.
+    schema:
+      $ref: '#/definitions/Group'
+  errResponse:
+    description: ErrResponse defines the return message when an error occurred.
+    schema:
+      $ref: '#/definitions/ErrResponse'
+  getGroupResponse:
+    description: Group response.
+    schema:
+      $ref: '#/definitions/Group'
+  listGroupResponse:
+    description: List groups response.
+    schema:
+      $ref: '#/definitions/Groups'
+  okResponse:
+    description: Return nil json object.
+  updateGroupResponse:
+    description: Group response.
+    schema:
+      $ref: '#/definitions/Group'
+schemes:
+- http
+- https
+securityDefinitions:
+  basic:
+    type: basic
+swagger: "2.0"

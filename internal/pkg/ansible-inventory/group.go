@@ -50,7 +50,7 @@ func newGroup() Group {
 }
 
 func (g *group) AddHost(hosts ...Host) error {
-	if hosts == nil || len(hosts) == 0 {
+	if len(hosts) == 0 {
 		return errors.New("input hosts are null")
 	}
 	isIn := true
@@ -85,7 +85,7 @@ func (g *group) AddHost(hosts ...Host) error {
 }
 
 func (g *group) RemoveHost(hosts ...Host) {
-	if hosts == nil || len(hosts) == 0 {
+	if len(hosts) == 0 {
 		return
 	}
 	for _, h := range hosts {

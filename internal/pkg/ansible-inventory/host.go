@@ -129,9 +129,9 @@ func (h hostPatternIPv4) GetIPString() string {
 	return ipString
 }
 
-func (h hostPatternIPv4) getLowIPHost() Host {
-	return host{ipAddr: net.IPAddr{IP: h.pattern.LowIP()}}
-}
+//func (h hostPatternIPv4) getLowIPHost() Host {
+//	return host{ipAddr: net.IPAddr{IP: h.pattern.LowIP()}}
+//}
 
 func (h hostPatternIPv4) getHighIPHost() Host {
 	return host{ipAddr: net.IPAddr{IP: h.pattern.HighIP()}}

@@ -1,7 +1,3 @@
-// Copyright 2020 Lingfei Kong <colin404@foxmail.com>. All rights reserved.
-// Use of this source code is governed by a MIT style
-// license that can be found in the LICENSE file.
-
 package code
 
 //go:generate codegen -type=int
@@ -35,28 +31,10 @@ const (
 	ErrDatabase int = iota + 100101
 )
 
-// common: authorization and authentication errors.
+// common: data repository errors.
 const (
-	// ErrEncrypt - 401: Error occurred while encrypting the user password.
-	ErrEncrypt int = iota + 100201
-
-	// ErrSignatureInvalid - 401: Signature is invalid.
-	ErrSignatureInvalid
-
-	// ErrExpired - 401: Token expired.
-	ErrExpired
-
-	// ErrInvalidAuthHeader - 401: Invalid authorization header.
-	ErrInvalidAuthHeader
-
-	// ErrMissingHeader - 401: The `Authorization` header was empty.
-	ErrMissingHeader
-
-	// ErrPasswordIncorrect - 401: Password was incorrect.
-	ErrPasswordIncorrect
-
-	// PermissionDenied - 403: Permission denied.
-	ErrPermissionDenied
+	// ErrDataRepository - 500: Data Repository error.
+	ErrDataRepository int = iota + 100201
 )
 
 // common: encode/decode errors.
