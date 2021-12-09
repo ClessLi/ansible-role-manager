@@ -6,6 +6,7 @@ import (
 	"github.com/ClessLi/ansible-role-manager/internal/pkg/code"
 	file_store "github.com/ClessLi/ansible-role-manager/internal/pkg/file-store"
 	metav1 "github.com/ClessLi/ansible-role-manager/internal/pkg/meta/v1"
+	log "github.com/ClessLi/ansible-role-manager/pkg/log/v2"
 	"github.com/marmotedu/errors"
 )
 
@@ -15,7 +16,7 @@ type inventory struct {
 }
 
 func (i *inventory) Create(ctx context.Context, group ansible_inventory.Group, options metav1.CreateOptions) error {
-	inv, err := i.load()
+	inv, err := i.load(ctx)
 	if err != nil {
 		return errors.WrapC(err, code.ErrDataRepository, "failed to load inventory")
 	}
@@ -29,12 +30,12 @@ func (i *inventory) Create(ctx context.Context, group ansible_inventory.Group, o
 		return errors.WithCode(code.ErrDataRepository, err.Error())
 	}
 
-	return errors.WrapC(i.save(inv), code.ErrDataRepository, "save inventory error")
+	return errors.WrapC(i.save(ctx, inv), code.ErrDataRepository, "save inventory error")
 }
 
 func (i *inventory) Delete(ctx context.Context, groupName string, options metav1.DeleteOptions) error {
 	// 加载inventory
-	inv, err := i.load()
+	inv, err := i.load(ctx)
 	if err != nil {
 		return errors.WrapC(err, code.ErrDataRepository, "failed to load inventory")
 	}
@@ -48,12 +49,12 @@ func (i *inventory) Delete(ctx context.Context, groupName string, options metav1
 	inv.RemoveGroup(groupName)
 
 	// 保存inventory
-	return errors.WrapC(i.save(inv), code.ErrDataRepository, "save inventory error")
+	return errors.WrapC(i.save(ctx, inv), code.ErrDataRepository, "save inventory error")
 }
 
 func (i *inventory) DeleteCollection(ctx context.Context, groupNames []string, options metav1.DeleteOptions) error {
 	// 加载inventory
-	inv, err := i.load()
+	inv, err := i.load(ctx)
 	if err != nil {
 		return errors.WrapC(err, code.ErrDataRepository, "failed to load inventory")
 	}
@@ -89,12 +90,12 @@ func (i *inventory) DeleteCollection(ctx context.Context, groupNames []string, o
 	}
 
 	// 保存inventory
-	return errors.WrapC(i.save(inv), code.ErrDataRepository, "save inventory error")
+	return errors.WrapC(i.save(ctx, inv), code.ErrDataRepository, "save inventory error")
 }
 
 func (i *inventory) Update(ctx context.Context, group ansible_inventory.Group, options metav1.UpdateOptions) error {
 	// 加载inventory
-	inv, err := i.load()
+	inv, err := i.load(ctx)
 	if err != nil {
 		return errors.WrapC(err, code.ErrDataRepository, "failed to load inventory")
 	}
@@ -114,12 +115,12 @@ func (i *inventory) Update(ctx context.Context, group ansible_inventory.Group, o
 	}
 
 	// 保存inventory
-	return errors.WrapC(i.save(inv), code.ErrDataRepository, "save inventory error")
+	return errors.WrapC(i.save(ctx, inv), code.ErrDataRepository, "save inventory error")
 }
 
 func (i *inventory) Get(ctx context.Context, groupName string, options metav1.GetOptions) (ansible_inventory.Group, error) {
 	// 加载inventory
-	inv, err := i.load()
+	inv, err := i.load(ctx)
 	if err != nil {
 		return nil, errors.WrapC(err, code.ErrDataRepository, "failed to load inventory")
 	}
@@ -136,7 +137,7 @@ func (i *inventory) Get(ctx context.Context, groupName string, options metav1.Ge
 
 func (i *inventory) List(ctx context.Context, options metav1.ListOptions) (*ansible_inventory.Groups, error) {
 	// 加载inventory
-	inv, err := i.load()
+	inv, err := i.load(ctx)
 	if err != nil {
 		return nil, errors.WrapC(err, code.ErrDataRepository, "failed to load inventory")
 	}
@@ -145,9 +146,10 @@ func (i *inventory) List(ctx context.Context, options metav1.ListOptions) (*ansi
 	return groups, errors.WrapC(err, code.ErrDataRepository, "list groups error")
 }
 
-func (i *inventory) load() (ansible_inventory.Inventory, error) {
+func (i *inventory) load(ctx context.Context) (ansible_inventory.Inventory, error) {
 	filePaths, err := i.fs.AllFiles()
 	if err != nil {
+		log.L(ctx).Warnf("fileStore get file paths failed %s", err.Error())
 		return nil, errors.Wrap(err, "failed to get file paths")
 	}
 	groups := make(map[string]ansible_inventory.Group)
@@ -155,7 +157,8 @@ func (i *inventory) load() (ansible_inventory.Inventory, error) {
 	for _, filePath := range filePaths {
 		b, err := i.fs.Read(filePath)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to read file '%v'", filePath)
+			log.L(ctx).Warnf("fileStore read file '%s' failed %s", filePath, err.Error())
+			return nil, errors.Wrapf(err, "failed to read file '%s'", filePath)
 		}
 		g, err := i.parser.Parse(b)
 		if err != nil {
@@ -173,13 +176,14 @@ func (i *inventory) load() (ansible_inventory.Inventory, error) {
 	return inv, errors.NewAggregate(errs)
 }
 
-func (i *inventory) save(inv ansible_inventory.Inventory) error {
+func (i *inventory) save(ctx context.Context, inv ansible_inventory.Inventory) error {
 	// 清理TruncatedGroup
 	for tGName, isTruncated := range inv.GetTruncatedGroup() {
 		if isTruncated {
 			//err = os.Remove(filepath.Join(i.dirPath, tGName))
 			err := i.fs.Remove(tGName)
 			if err != nil {
+				log.L(ctx).Errorf("fileStore remove file '%s' failed %s", tGName, err.Error())
 				return errors.New(err.Error())
 			}
 		}
@@ -189,12 +193,14 @@ func (i *inventory) save(inv ansible_inventory.Inventory) error {
 	for gName, g := range inv.GetAllGroups() {
 		b, err := i.parser.Dump(g)
 		if err != nil {
+			log.L(ctx).Warnf("ansible_inventory.Parser dump group '%s' failed %s", gName, err.Error())
 			return errors.New(err.Error())
 		}
 
 		//err = os.WriteFile(filepath.Join(*i.dirPath, gName), b, 0644)
 		err = i.fs.Write(gName, b)
 		if err != nil {
+			log.L(ctx).Warnf("fileStore write file '%s' failed %s", gName, err.Error())
 			return errors.New(err.Error())
 		}
 	}
