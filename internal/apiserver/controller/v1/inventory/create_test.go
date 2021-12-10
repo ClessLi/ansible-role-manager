@@ -2,12 +2,14 @@ package inventory
 
 import (
 	"bytes"
+	"fmt"
 	srvv1 "github.com/ClessLi/ansible-role-manager/internal/apiserver/service/v1"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestInventoryController_Create(t *testing.T) {
@@ -24,6 +26,8 @@ func TestInventoryController_Create(t *testing.T) {
 	)
 	c.Request, _ = http.NewRequest("POST", "/v1/groups", body)
 	c.Request.Header.Set("Content-Type", "application/json")
+	c.Set("requestID", fmt.Sprintf("test-%d", time.Now().Unix()))
+	c.Set("username", "testuser")
 
 	type fields struct {
 		srv srvv1.Service
