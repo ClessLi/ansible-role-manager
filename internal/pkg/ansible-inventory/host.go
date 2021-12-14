@@ -251,7 +251,7 @@ func parseHostPatternIPv4(s string) Host {
 				return nil
 			}
 
-			if low < 0 || low > 254 || high < low || high > 254 {
+			if low < 0 || low > 256 || high < low || high > 256 {
 				return nil
 			}
 
