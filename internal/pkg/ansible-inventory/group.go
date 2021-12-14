@@ -79,7 +79,7 @@ func (g *group) AddHost(hosts ...Host) error {
 		})
 	}
 	if isIn {
-		return errors.New("input hosts are in the group")
+		return errors.New("input hosts are in the group or no valid host")
 	}
 	return nil
 }

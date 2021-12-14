@@ -3,8 +3,8 @@ package file
 import (
 	"fmt"
 	"github.com/ClessLi/ansible-role-manager/internal/apiserver/store"
-	ansible_inventory "github.com/ClessLi/ansible-role-manager/internal/pkg/ansible-inventory"
-	file_store "github.com/ClessLi/ansible-role-manager/internal/pkg/file-store"
+	"github.com/ClessLi/ansible-role-manager/internal/pkg/ansible-inventory"
+	"github.com/ClessLi/ansible-role-manager/internal/pkg/file-store"
 	"sync"
 )
 

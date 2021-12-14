@@ -76,9 +76,13 @@ func Test_inventory_load(t *testing.T) {
 		fs     file_store.FileStore
 		parser ansible_inventory.Parser
 	}
+	type args struct {
+		ctx context.Context
+	}
 	tests := []struct {
 		name    string
 		fields  fields
+		args    args
 		want    ansible_inventory.Inventory
 		wantErr bool
 	}{
@@ -88,6 +92,7 @@ func Test_inventory_load(t *testing.T) {
 				fs:     fs,
 				parser: parser,
 			},
+			args: args{ctx: context.Background()},
 			want: ansible_inventory.NewInventory(groups),
 		},
 		//{
@@ -104,6 +109,7 @@ func Test_inventory_load(t *testing.T) {
 				fs:     nullFilesfs,
 				parser: parser,
 			},
+			args:    args{ctx: context.Background()},
 			wantErr: true,
 		},
 	}
@@ -113,7 +119,7 @@ func Test_inventory_load(t *testing.T) {
 				fs:     tt.fields.fs,
 				parser: tt.fields.parser,
 			}
-			got, err := i.load()
+			got, err := i.load(tt.args.ctx)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("load() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -137,6 +143,7 @@ func Test_inventory_save(t *testing.T) {
 		parser ansible_inventory.Parser
 	}
 	type args struct {
+		ctx context.Context
 		inv ansible_inventory.Inventory
 	}
 	tests := []struct {
@@ -152,6 +159,7 @@ func Test_inventory_save(t *testing.T) {
 				parser: ansible_inventory.NewParser(),
 			},
 			args: args{
+				ctx: context.Background(),
 				inv: ansible_inventory.NewInventory(groups),
 			},
 		},
@@ -162,7 +170,7 @@ func Test_inventory_save(t *testing.T) {
 				fs:     tt.fields.fs,
 				parser: tt.fields.parser,
 			}
-			if err := i.save(tt.args.inv); (err != nil) != tt.wantErr {
+			if err := i.save(tt.args.ctx, tt.args.inv); (err != nil) != tt.wantErr {
 				t.Errorf("save() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
